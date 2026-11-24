@@ -1,0 +1,4 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = [".*", "frontend", "vibematch-api-test-*", "__pycache__"]
+addopts = "-ra"

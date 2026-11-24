@@ -1,5 +1,7 @@
 # VibeMatch
 
+[![CI](https://github.com/zipgirl/vibe-match/actions/workflows/ci.yml/badge.svg)](https://github.com/zipgirl/vibe-match/actions/workflows/ci.yml)
+
 Anonymous multimodal playlist matching. The current MVP includes a small provenance-aware music catalog, a text-based recommendation baseline, optional local image captioning, explicit-feedback personalization, a FastAPI backend, and a React interface. It links to external listening pages; it does not host audio.
 
 ## Local setup

@@ -3,7 +3,6 @@ from __future__ import annotations
 import csv
 import sqlite3
 from pathlib import Path
-from tempfile import TemporaryDirectory
 
 import pytest
 
@@ -22,18 +21,17 @@ def test_checked_in_catalog_loads_with_provenance() -> None:
     assert all(track.genres for track in tracks)
 
 
-def test_catalog_rejects_unapproved_license() -> None:
+def test_catalog_rejects_unapproved_license(tmp_path: Path) -> None:
     with CATALOG.open(encoding="utf-8-sig", newline="") as source:
         rows = list(csv.DictReader(source))
     rows[0]["license"] = "CC BY-NC-ND"
-    with TemporaryDirectory(prefix="vibematch-catalog-test-", dir=CATALOG.parents[2]) as directory:
-        invalid_catalog = Path(directory) / "invalid.csv"
-        with invalid_catalog.open("w", encoding="utf-8", newline="") as target:
-            writer = csv.DictWriter(target, fieldnames=rows[0].keys())
-            writer.writeheader()
-            writer.writerows(rows)
-        with pytest.raises(CatalogValidationError, match="not approved"):
-            load_tracks_csv(invalid_catalog)
+    invalid_catalog = tmp_path / "invalid.csv"
+    with invalid_catalog.open("w", encoding="utf-8", newline="") as target:
+        writer = csv.DictWriter(target, fieldnames=rows[0].keys())
+        writer.writeheader()
+        writer.writerows(rows)
+    with pytest.raises(CatalogValidationError, match="not approved"):
+        load_tracks_csv(invalid_catalog)
 
 
 def test_sqlite_import_is_idempotent_and_round_trips_genres() -> None:
