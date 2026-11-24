@@ -27,6 +27,10 @@ The BLIP weights download and cache on the first image request. The text flow wo
 
 ## Import the application catalog
 
+An empty database is seeded from `data/catalog/tracks.csv` automatically when the API starts, so a fresh clone is usable without a manual import step. Existing databases are never overwritten on startup.
+
+To re-import the catalog manually (for example after editing the CSV), run:
+
 ```powershell
 python -m backend.app.catalog --csv data/catalog/tracks.csv --db data/vibematch.sqlite
 ```
@@ -43,7 +47,7 @@ The output includes ranking score components, metadata-based reasons, and source
 
 ## Run the API and web app
 
-Import the catalog once, then start the API in one terminal:
+Start the API in one terminal; the first start seeds the local catalog automatically:
 
 ```powershell
 python -m uvicorn backend.app.api.app:app --reload --port 8000

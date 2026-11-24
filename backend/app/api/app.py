@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import re
 from io import BytesIO
 from contextlib import asynccontextmanager, contextmanager
@@ -15,6 +16,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 from starlette.concurrency import run_in_threadpool
 
 from backend.app.catalog.database import connect, fetch_tracks, initialize_database
+from backend.app.catalog.seed import seed_catalog_if_empty
 from backend.app.inference.image_captioning import BlipLocalCaptioner, ImageModelUnavailable
 from backend.app.playlists.repository import (
     ensure_session,
@@ -29,7 +31,9 @@ from backend.app.recommendations.baseline import Recommendation, recommend
 from backend.app.recommendations.profile import liked_genre_weights
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
+DEFAULT_CATALOG_PATH = PROJECT_ROOT / "data" / "catalog" / "tracks.csv"
 SESSION_PATTERN = re.compile(r"^[A-Za-z0-9_-]{8,64}$")
+LOGGER = logging.getLogger(__name__)
 
 
 class APIModel(BaseModel):
@@ -118,15 +122,27 @@ def _track_recommendation(result: Recommendation) -> TrackRecommendation:
     )
 
 
-def create_app(database_path: str | Path) -> FastAPI:
-    """Create an app instance with explicit local database/catalog locations."""
+def create_app(
+    database_path: str | Path,
+    catalog_path: str | Path | None = None,
+) -> FastAPI:
+    """Create an app instance with explicit local database/catalog locations.
+
+    On startup an empty database is seeded from the versioned catalog CSV so a
+    fresh clone is usable without a manual import step.
+    """
     db_path = Path(database_path)
+    catalog_csv = Path(catalog_path) if catalog_path is not None else DEFAULT_CATALOG_PATH
+
     @asynccontextmanager
     async def lifespan(application: FastAPI):
         db_path.parent.mkdir(parents=True, exist_ok=True)
         connection = connect(db_path)
         try:
             initialize_database(connection)
+            seeded = seed_catalog_if_empty(connection, catalog_csv)
+            if seeded:
+                LOGGER.info("Seeded %s catalog tracks from %s", seeded, catalog_csv)
             yield
         finally:
             connection.close()
