@@ -144,7 +144,9 @@ def create_app(database_path: str | Path) -> FastAPI:
 
     @contextmanager
     def database() -> Generator:
-        connection = connect(db_path)
+        # FastAPI can run sync dependencies and endpoints on different worker
+        # threads, so this per-request connection must allow cross-thread use.
+        connection = connect(db_path, check_same_thread=False)
         try:
             with connection:
                 yield connection
