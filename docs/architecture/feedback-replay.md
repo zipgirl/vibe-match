@@ -16,6 +16,7 @@ It reports macro-averaged Precision@K, Recall@K, and NDCG@K, plus counts of sess
 
 - A recommendation must have been exposed before a person can judge it, so the logs have exposure and position bias.
 - Only explicit likes and dislikes are used as judged items. Skips and unjudged items are omitted, not treated as negatives.
+- Precision@K divides by the number of explicitly judged items available in the top K, not by K itself, so an unjudged slot is not counted as a miss.
 - The candidate slate is the set originally shown to the user; this does not measure catalog-wide retrieval coverage.
 - This is an offline replay diagnostic, not a randomized experiment or causal estimate of personalization benefit.
 - Small samples, repeated listening, and changes in catalog/model behavior can make the result unstable. Report counts with the metrics and do not interpret tiny samples as general performance.
