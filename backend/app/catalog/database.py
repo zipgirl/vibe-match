@@ -74,8 +74,17 @@ CREATE TABLE IF NOT EXISTS feedback_events (
 """
 
 
-def connect(database_path: str | Path) -> sqlite3.Connection:
-    connection = sqlite3.connect(database_path)
+def connect(
+    database_path: str | Path,
+    *,
+    check_same_thread: bool = True,
+) -> sqlite3.Connection:
+    """Open a SQLite connection with named rows and foreign keys enabled.
+
+    API request dependencies may hand a connection between worker threads, so
+    the app opts out of SQLite's thread check for its per-request connections.
+    """
+    connection = sqlite3.connect(database_path, check_same_thread=check_same_thread)
     connection.row_factory = sqlite3.Row
     connection.execute("PRAGMA foreign_keys = ON")
     return connection
