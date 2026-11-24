@@ -12,10 +12,17 @@ def _validate_k(k: int) -> None:
 
 
 def precision_at_k(ranked_ids: Iterable[str], relevant_ids: set[str], k: int) -> float:
-    """Fraction of the first k recommendation slots that are relevant."""
+    """Fraction of available judged top-k slots that are relevant.
+
+    The replay passes only items with explicit judgments, so the denominator is
+    capped at the number of available ranked items. Unjudged and skipped items
+    must not be silently treated as negatives.
+    """
     _validate_k(k)
     ranked = list(ranked_ids)[:k]
-    return sum(item in relevant_ids for item in ranked) / k
+    if not ranked:
+        return 0.0
+    return sum(item in relevant_ids for item in ranked) / len(ranked)
 
 
 def recall_at_k(ranked_ids: Iterable[str], relevant_ids: set[str], k: int) -> float:

@@ -13,6 +13,11 @@ def test_top_k_metrics_for_known_relevance() -> None:
     assert ndcg_at_k(ranked, relevant, 3) == pytest.approx((1 + 1 / 2) / (1 + 1 / 1.584962500721156))
 
 
+def test_precision_uses_available_judged_items_when_slate_is_smaller_than_k() -> None:
+    assert precision_at_k(["a", "b"], {"a"}, 5) == pytest.approx(0.5)
+    assert precision_at_k([], {"a"}, 5) == 0.0
+
+
 def test_metrics_reject_undefined_inputs() -> None:
     with pytest.raises(ValueError, match="k"):
         precision_at_k(["a"], {"a"}, 0)
