@@ -1,0 +1,3 @@
+# Install this optional set only when enabling local BLIP captioning.
+-r requirements.txt
+transformers>=5.0
